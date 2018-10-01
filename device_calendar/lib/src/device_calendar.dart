@@ -66,6 +66,63 @@ class DeviceCalendarPlugin {
     return res;
   }
 
+  /// Deletes an event from a calendar
+  ///
+  /// The `calendarId` paramter is the id of the calendar that plugin will try to delete
+  ///
+  /// Returns a [Result] indicating if the event has (true) or has not (false) been deleted from the calendar
+  Future<Result<bool>> deleteCalendar(String calendarId) async {
+    final res = new Result<bool>();
+
+    if ((calendarId?.isEmpty ?? true)) {
+      res.errorMessages.add(
+          "[${ErrorCodes.invalidArguments}] ${ErrorMessages.deleteCalendarInvalidArgumentsMessage}");
+      return res;
+    }
+
+    try {
+      res.data = await channel.invokeMethod(
+        'deleteCalendar',
+        <String, Object>{'calendarId': calendarId},
+      );
+    } catch (e) {
+      _parsePlatformExceptionAndUpdateResult<bool>(e, res);
+    }
+
+    return res;
+  }
+
+  /// Creates or updates an Calendar
+  ///
+  /// Returns a [Result] with the newly created or updated [Calendar.id]
+  Future<Result<String>> createOrUpdateCalendar(Calendar calendar) async {
+    final res = new Result<String>();
+
+    if (calendar.accountName == null ||
+        calendar.color == null ||
+        calendar.name == null) {
+      res.errorMessages.add(
+          "[${ErrorCodes.invalidArguments}] ${ErrorMessages.deleteCalendarInvalidArgumentsMessage}");
+      return res;
+    }
+
+    try {
+      res.data = await channel.invokeMethod(
+        'createOrUpdateCalendar',
+        <String, Object>{
+          'calendarId': calendar.id,
+          'calendarTitle': calendar.name,
+          'calendarColor': calendar.color.value,
+          'calendarAccountName': calendar.accountName,
+        },
+      );
+    } catch (e) {
+      _parsePlatformExceptionAndUpdateResult<String>(e, res);
+    }
+
+    return res;
+  }
+
   /// Retrieves the events from the specified calendar
   ///
   /// The `calendarId` paramter is the id of the calendar that plugin will return events for
@@ -163,15 +220,18 @@ class DeviceCalendarPlugin {
     }
 
     try {
-      res.data =
-          await channel.invokeMethod('createOrUpdateEvent', <String, Object>{
-        'calendarId': event.calendarId,
-        'eventId': event.eventId,
-        'eventTitle': event.title,
-        'eventDescription': event.description,
-        'eventStartDate': event.start.millisecondsSinceEpoch,
-        'eventEndDate': event.end.millisecondsSinceEpoch,
-      });
+      res.data = await channel.invokeMethod(
+        'createOrUpdateEvent',
+        <String, Object>{
+          'calendarId': event.calendarId,
+          'eventId': event.eventId,
+          'eventTitle': event.title,
+          'eventDescription': event.description,
+          'eventStartDate': event.start.millisecondsSinceEpoch,
+          'eventEndDate': event.end.millisecondsSinceEpoch,
+          'eventAlarm': event.alarm?.inSeconds,
+        },
+      );
     } catch (e) {
       _parsePlatformExceptionAndUpdateResult<String>(e, res);
     }

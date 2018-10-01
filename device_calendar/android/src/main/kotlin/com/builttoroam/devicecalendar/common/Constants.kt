@@ -9,13 +9,15 @@ class Constants {
         const val CALENDAR_PROJECTION_DISPLAY_NAME_INDEX: Int = 2
         const val CALENDAR_PROJECTION_OWNER_ACCOUNT_INDEX: Int = 3
         const val CALENDAR_PROJECTION_ACCESS_LEVEL_INDEX: Int = 4
+        const val CALENDAR_PROJECTION_COLOR_INDEX: Int = 5
 
         val CALENDAR_PROJECTION: Array<String> = arrayOf(
                 CalendarContract.Calendars._ID,                           // 0
                 CalendarContract.Calendars.ACCOUNT_NAME,                  // 1
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,         // 2
                 CalendarContract.Calendars.OWNER_ACCOUNT,                 // 3
-                CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL          // 4
+                CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,         // 4
+                CalendarContract.Calendars.CALENDAR_COLOR                 // 5
         )
 
         const val EVENT_PROJECTION_ID_INDEX: Int = 0
@@ -58,6 +60,16 @@ class Constants {
                 CalendarContract.Attendees.ATTENDEE_TYPE,
                 CalendarContract.Attendees.ATTENDEE_RELATIONSHIP,
                 CalendarContract.Attendees.ATTENDEE_STATUS
+        )
+
+        const val REMINDER_ID_INDEX: Int = 0
+        const val REMINDER_EVENT_ID_INDEX: Int = 1
+        const val REMINDER_MINUTES_INDEX: Int = 2
+
+        val REMINDER_PROJECTION: Array<String> = arrayOf(
+                CalendarContract.Reminders._ID,
+                CalendarContract.Reminders.EVENT_ID,
+                CalendarContract.Reminders.MINUTES
         )
     }
 }

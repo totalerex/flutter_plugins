@@ -11,12 +11,26 @@ class Calendar {
   /// If the calendar is read-only
   bool isReadOnly;
 
-  Calendar({this.id, this.name, this.isReadOnly});
+  /// Calendar color (required for android)
+  Color color;
+
+  /// Account name (required for android)
+  String accountName;
+
+  Calendar({
+    this.id,
+    this.name,
+    this.isReadOnly,
+    this.color,
+    this.accountName,
+  });
 
   Calendar.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
     isReadOnly = json['isReadOnly'];
+    color = json['color'] != null ? Color(json['color']) : null;
+    accountName = json['accountName'];
   }
 
   Map<String, dynamic> toJson() {
@@ -24,6 +38,8 @@ class Calendar {
     data['id'] = this.id;
     data['name'] = this.name;
     data['isReadOnly'] = this.isReadOnly;
+    data['color'] = this.color.value;
+    data['account'] = this.accountName;
     return data;
   }
 }

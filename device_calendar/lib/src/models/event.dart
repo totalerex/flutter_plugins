@@ -29,8 +29,18 @@ class Event {
   /// A list of attendees for this event
   List<Attendee> attendees;
 
-  Event(this.calendarId,
-      {this.eventId, this.title, this.start, this.end, this.description});
+  /// Time before the start of the event
+  Duration alarm;
+
+  Event(
+    this.calendarId, {
+    this.eventId,
+    this.title,
+    this.start,
+    this.end,
+    this.description,
+    this.alarm,
+  });
 
   Event.fromJson(Map<String, dynamic> json) {
     if (json == null) {
@@ -57,6 +67,7 @@ class Event {
         return new Attendee.fromJson(decodedAttendee);
       }).toList();
     }
+    alarm = json['alarm'] != null ? Duration(seconds: json['alarm']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -77,6 +88,7 @@ class Event {
       }
       data['attendees'] = attendeesJson;
     }
+    data['alarm'] = this.alarm.inSeconds;
     return data;
   }
 }

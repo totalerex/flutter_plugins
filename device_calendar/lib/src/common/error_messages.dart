@@ -10,4 +10,8 @@ class ErrorMessages {
       "Calendar ID and/or Event ID argument(s) have not been specified or are invalid";
   static const String createOrUpdateEventInvalidArgumentsMessage =
       "To create or update an event you must provide calendar ID, event with a title and event's start date and end date (where start date must be before end date)";
+  static const String deleteCalendarInvalidArgumentsMessage =
+      "Calendar ID argument have not been specified or are invalid";
+  static const String createOrUpdateCalendarInvalidArgumentsMessage =
+      "To create or update an calendar you must provide a calendar with a title, color and account name";
 }

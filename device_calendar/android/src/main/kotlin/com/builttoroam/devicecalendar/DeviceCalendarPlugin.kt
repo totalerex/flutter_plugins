@@ -2,6 +2,7 @@ package com.builttoroam.devicecalendar
 
 import android.app.Activity
 import android.content.Context
+import com.builttoroam.devicecalendar.models.Calendar
 import com.builttoroam.devicecalendar.models.Event
 
 import io.flutter.plugin.common.MethodChannel
@@ -25,10 +26,15 @@ class DeviceCalendarPlugin() : MethodCallHandler {
     val RETRIEVE_CALENDARS_METHOD = "retrieveCalendars"
     val RETRIEVE_EVENTS_METHOD = "retrieveEvents"
     val DELETE_EVENT_METHOD = "deleteEvent"
+    val DELETE_CALENDAR_METHOD = "deleteCalendar"
     val CREATE_OR_UPDATE_EVENT_METHOD = "createOrUpdateEvent"
+    val CREATE_OR_UPDATE_CALENDAR_METHOD = "createOrUpdateCalendar"
 
     // Method arguments
+    val CALENDAR_ACCOUNT_NAME_ARGUMENT = "calendarAccountName"
+    val CALENDAR_COLOR_ARGUMENT = "calendarColor"
     val CALENDAR_ID_ARGUMENT = "calendarId"
+    val CALENDAR_TITLE_ARGUMENT = "calendarTitle"
     val CALENDAR_EVENTS_START_DATE_ARGUMENT = "startDate"
     val CALENDAR_EVENTS_END_DATE_ARGUMENT = "endDate"
     val CALENDAR_EVENTS_IDS_ARGUMENT = "eventIds"
@@ -37,6 +43,7 @@ class DeviceCalendarPlugin() : MethodCallHandler {
     val EVENT_DESCRIPTION_ARGUMENT = "eventDescription"
     val EVENT_START_DATE_ARGUMENT = "eventStartDate"
     val EVENT_END_DATE_ARGUMENT = "eventEndDate"
+    val EVENT_ALARM_ARGUMENT = "eventAlarm"
 
     private constructor(registrar: Registrar, calendarDelegate: CalendarDelegate) : this() {
         _registrar = registrar
@@ -88,6 +95,7 @@ class DeviceCalendarPlugin() : MethodCallHandler {
                 val eventDescription = call.argument<String>(EVENT_DESCRIPTION_ARGUMENT)
                 val eventStart = call.argument<Long>(EVENT_START_DATE_ARGUMENT)
                 val eventEnd = call.argument<Long>(EVENT_END_DATE_ARGUMENT)
+                val eventAlarm = call.argument<Int>(EVENT_ALARM_ARGUMENT)
 
                 val event = Event(eventTitle)
                 event.calendarId = calendarId
@@ -95,6 +103,7 @@ class DeviceCalendarPlugin() : MethodCallHandler {
                 event.description = eventDescription
                 event.start = eventStart
                 event.end = eventEnd
+                event.alarm = -eventAlarm
 
                 _calendarDelegate.createOrUpdateEvent(calendarId, event, result)
             }
@@ -103,6 +112,23 @@ class DeviceCalendarPlugin() : MethodCallHandler {
                 val eventId = call.argument<String>(EVENT_ID_ARGUMENT)
 
                 _calendarDelegate.deleteEvent(calendarId, eventId, result)
+            }
+            DELETE_CALENDAR_METHOD -> {
+                val calendarId = call.argument<String>(CALENDAR_ID_ARGUMENT)
+
+                _calendarDelegate.deleteCalendar(calendarId, result)
+            }
+            CREATE_OR_UPDATE_CALENDAR_METHOD -> {
+                val calendarId = call.argument<String>(CALENDAR_ID_ARGUMENT)
+                val calendarTitle = call.argument<String>(CALENDAR_TITLE_ARGUMENT)
+                val calendarColor = call.argument<Long>(CALENDAR_COLOR_ARGUMENT)
+                val calendarAccount = call.argument<String>(CALENDAR_ACCOUNT_NAME_ARGUMENT)
+
+                val calendar = Calendar(calendarTitle, calendarColor)
+                calendar.id = calendarId
+                calendar.accountName = calendarAccount
+
+                _calendarDelegate.createOrUpdateCalendar(calendar, result)
             }
             else -> {
                 result.notImplemented()
