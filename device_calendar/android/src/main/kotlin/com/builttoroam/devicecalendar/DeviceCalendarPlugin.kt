@@ -43,7 +43,7 @@ class DeviceCalendarPlugin() : MethodCallHandler {
     val EVENT_DESCRIPTION_ARGUMENT = "eventDescription"
     val EVENT_START_DATE_ARGUMENT = "eventStartDate"
     val EVENT_END_DATE_ARGUMENT = "eventEndDate"
-    val EVENT_ALARM_ARGUMENT = "eventAlarm"
+    val EVENT_ALARMS_ARGUMENT = "eventAlarms"
 
     private constructor(registrar: Registrar, calendarDelegate: CalendarDelegate) : this() {
         _registrar = registrar
@@ -95,7 +95,7 @@ class DeviceCalendarPlugin() : MethodCallHandler {
                 val eventDescription = call.argument<String>(EVENT_DESCRIPTION_ARGUMENT)
                 val eventStart = call.argument<Long>(EVENT_START_DATE_ARGUMENT)
                 val eventEnd = call.argument<Long>(EVENT_END_DATE_ARGUMENT)
-                val eventAlarm = call.argument<Int>(EVENT_ALARM_ARGUMENT)
+                val eventAlarms = call.argument<MutableList<Int>>(EVENT_ALARMS_ARGUMENT)
 
                 val event = Event(eventTitle)
                 event.calendarId = calendarId
@@ -103,7 +103,7 @@ class DeviceCalendarPlugin() : MethodCallHandler {
                 event.description = eventDescription
                 event.start = eventStart
                 event.end = eventEnd
-                event.alarm = -eventAlarm
+                event.alarms = eventAlarms.map{-it}.toMutableList()
 
                 _calendarDelegate.createOrUpdateEvent(calendarId, event, result)
             }

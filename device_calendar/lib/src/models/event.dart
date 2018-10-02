@@ -29,8 +29,9 @@ class Event {
   /// A list of attendees for this event
   List<Attendee> attendees;
 
-  /// Time before the start of the event
-  Duration alarm;
+  /// Sets alarm to the start of the event
+  /// Negative value indicates before the date
+  List<Duration> alarms;
 
   Event(
     this.calendarId, {
@@ -39,7 +40,7 @@ class Event {
     this.start,
     this.end,
     this.description,
-    this.alarm,
+    this.alarms,
   });
 
   Event.fromJson(Map<String, dynamic> json) {
@@ -67,28 +68,38 @@ class Event {
         return new Attendee.fromJson(decodedAttendee);
       }).toList();
     }
-    alarm = json['alarm'] != null ? Duration(seconds: json['alarm']) : null;
+    if (json['alarms'] != null) {
+      alarms = json['alarms'].map<Duration>((decodedAlarm) {
+        return decodedAlarm != null ? Duration(seconds: decodedAlarm) : null;
+      }).toList();
+    }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['eventId'] = this.eventId;
     data['calendarId'] = this.calendarId;
-    data['title'] = this.title;
-    data['description'] = this.description;
-    data['start'] = this.start.millisecondsSinceEpoch;
-    data['end'] = this.end.millisecondsSinceEpoch;
-    data['allDay'] = this.allDay;
-    data['location'] = this.location;
+    data['eventTitle'] = this.title;
+    data['eventDescription'] = this.description;
+    data['eventStartDate'] = this.start.millisecondsSinceEpoch;
+    data['eventEndDate'] = this.end.millisecondsSinceEpoch;
+    data['eventAllDay'] = this.allDay;
+    data['eventLocation'] = this.location;
     if (attendees != null) {
       List<Map<String, dynamic>> attendeesJson = new List();
       for (var attendee in attendees) {
         var attendeeJson = attendee.toJson();
         attendeesJson.add(attendeeJson);
       }
-      data['attendees'] = attendeesJson;
+      data['eventAttendees'] = attendeesJson;
     }
-    data['alarm'] = this.alarm.inSeconds;
+    if (alarms != null) {
+      List<int> alarmsJson = new List();
+      for (var alarm in alarms) {
+        alarmsJson.add(alarm.inSeconds);
+      }
+      data['eventAlarms'] = alarmsJson;
+    }
     return data;
   }
 }

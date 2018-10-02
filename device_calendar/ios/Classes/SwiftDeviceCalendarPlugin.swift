@@ -29,7 +29,7 @@ extension CGColor {
             let r = components[0]*CGFloat(255<<16)
             let g = components[1]*CGFloat(255<<8)
             let b = components[2]*CGFloat(255)
-            return (Int)(a) | (Int)(r) | (Int)(g) | (Int)(b)
+            return (Int)(a) | (Int)(r) | (Int)(g) | (Int)(b)
         }
     }
 }
@@ -52,7 +52,7 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
         let allDay: Bool
         let attendees: [Attendee]
         let location: String?
-        let alarm: Int?
+        let alarms: [Int]?
     }
     
     struct Attendee: Codable {
@@ -93,7 +93,7 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
     let eventDescriptionArgument = "eventDescription"
     let eventStartDateArgument =  "eventStartDate"
     let eventEndDateArgument = "eventEndDate"
-    let eventAlarmArgument = "eventAlarm"
+    let eventAlarmsArgument = "eventAlarms"
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: channelName, binaryMessenger: registrar.messenger())
@@ -261,10 +261,10 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             }
             
         }
-        let alarm = ekEvent.alarms?.first?.relativeOffset
+        let alarms = ekEvent.alarms?.flatMap({ Int($0.relativeOffset) })
         let end = Int(ekEvent.endDate.timeIntervalSince1970) * 1000
         let start = Int(ekEvent.startDate.timeIntervalSince1970) * 1000
-        let event = Event(eventId: ekEvent.eventIdentifier, calendarId: calendarId, title: ekEvent.title, description: ekEvent.notes, start: start, end: end, allDay: ekEvent.isAllDay, attendees: attendees, location: ekEvent.location, alarm: alarm != nil ? Int(alarm!) : nil)
+        let event = Event(eventId: ekEvent.eventIdentifier, calendarId: calendarId, title: ekEvent.title, description: ekEvent.notes, start: start, end: end, allDay: ekEvent.isAllDay, attendees: attendees, location: ekEvent.location, alarms: alarms)
         return event
     }
     
@@ -279,7 +279,7 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             let endDate = Date (timeIntervalSince1970: endDateDateMillisecondsSinceEpoch.doubleValue / 1000.0)
             let title = arguments[self.eventTitleArgument] as! String
             let description = arguments[self.eventDescriptionArgument] as? String
-            let alarm = arguments[self.eventAlarmArgument] as? NSNumber
+            let alarms = arguments[self.eventAlarmsArgument] as? [NSNumber]
             let ekCalendar = self.eventStore.calendar(withIdentifier: calendarId)
             if (ekCalendar == nil) {
                 self.finishWithCalendarNotFoundError(result: result, calendarId: calendarId)
@@ -302,9 +302,9 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
                 }
             }
 
-            if (alarm != nil) {
-                let alarm = EKAlarm(relativeOffset: TimeInterval(exactly: alarm!)!)
-                ekEvent!.addAlarm(alarm)
+            if (alarms != nil) {
+                let ekAlarms = alarms!.flatMap({ EKAlarm(relativeOffset: TimeInterval(exactly: $0)!) })
+                ekEvent!.alarms = ekAlarms
             }
             
             ekEvent!.title = title

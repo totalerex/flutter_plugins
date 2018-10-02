@@ -222,15 +222,7 @@ class DeviceCalendarPlugin {
     try {
       res.data = await channel.invokeMethod(
         'createOrUpdateEvent',
-        <String, Object>{
-          'calendarId': event.calendarId,
-          'eventId': event.eventId,
-          'eventTitle': event.title,
-          'eventDescription': event.description,
-          'eventStartDate': event.start.millisecondsSinceEpoch,
-          'eventEndDate': event.end.millisecondsSinceEpoch,
-          'eventAlarm': event.alarm?.inSeconds,
-        },
+        event.toJson(),
       );
     } catch (e) {
       _parsePlatformExceptionAndUpdateResult<String>(e, res);

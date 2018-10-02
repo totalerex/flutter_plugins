@@ -444,17 +444,23 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
                     // get the event ID that is the last element in the Uri
                     eventId = java.lang.Long.parseLong(uri?.getLastPathSegment())
                 } else {
-                    contentResolver?.update(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId), values, null, null)
+                    val eventsUriWithId = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
+                    val deleteSucceeded = contentResolver?.delete(eventsUriWithId, null, null) ?: 0
+                    val uri = contentResolver?.insert(CalendarContract.Events.CONTENT_URI, values)
+                    eventId = java.lang.Long.parseLong(uri?.getLastPathSegment())
+                    // contentResolver?.update(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId), values, null, null)
                 }
 
-                val alarm = event.alarm
-                if (alarm != null) {
+                val alarms = event.alarms
+                if (alarms != null) {
+                    for (alarm in alarms) {
                     val values = ContentValues()
                     val minutes = alarm / 60
                     values.put(Reminders.MINUTES, minutes)
                     values.put(Reminders.EVENT_ID, eventId)
                     values.put(Reminders.METHOD, Reminders.METHOD_ALERT)
                     contentResolver?.insert(Reminders.CONTENT_URI, values)
+                    }
                 }
 
                 finishWithSuccess(eventId.toString(), pendingChannelResult)
@@ -572,6 +578,7 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
         event.end = end
         event.allDay = allDay
         event.location = location
+        event.alarms = 
 
         return event
     }
@@ -705,14 +712,16 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
         val remindersCursor = contentResolver?.query(CalendarContract.Reminders.CONTENT_URI, REMINDER_PROJECTION, remindersQuery, null, null);
 
         try {
-            if (remindersCursor?.moveToFirst() == true) {
-                val reminder = parseReminder(remindersCursor)
-                if (reminder != null) {
-                    if (eventsMapById.containsKey(reminder.eventId.toString())) {
-                        val reminderEvent = eventsMapById[reminder.eventId.toString()]
-                        reminderEvent?.alarm = reminder.minutes * 60
+            if (remindersCursor?.moveToFirst() ?: false) {
+                do {
+                    val reminder = parseReminder(remindersCursor)
+                    if (reminder != null) {
+                        if (eventsMapById.containsKey(reminder.eventId.toString())) {
+                            val reminderEvent = eventsMapById[reminder.eventId.toString()]
+                            reminderEvent?.alarms?.add(-reminder.minutes * 60)
+                        }
                     }
-                }
+                } while (remindersCursor?.moveToNext() ?: false)
             }
         } catch (e: Exception) {
             finishWithError(GENERIC_ERROR, e.message, pendingChannelResult)
