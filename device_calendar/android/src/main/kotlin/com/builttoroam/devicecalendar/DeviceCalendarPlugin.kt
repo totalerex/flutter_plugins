@@ -24,6 +24,7 @@ class DeviceCalendarPlugin() : MethodCallHandler {
     val REQUEST_PERMISSIONS_METHOD = "requestPermissions"
     val HAS_PERMISSIONS_METHOD = "hasPermissions"
     val RETRIEVE_CALENDARS_METHOD = "retrieveCalendars"
+    val RETRIEVE_CALENDAR_METHOD = "retrieveCalendar"
     val RETRIEVE_EVENTS_METHOD = "retrieveEvents"
     val DELETE_EVENT_METHOD = "deleteEvent"
     val DELETE_CALENDAR_METHOD = "deleteCalendar"
@@ -80,6 +81,10 @@ class DeviceCalendarPlugin() : MethodCallHandler {
             RETRIEVE_CALENDARS_METHOD -> {
                 _calendarDelegate.retrieveCalendars(result)
             }
+            RETRIEVE_CALENDAR_METHOD -> {
+                val calendarId = call.argument<String>(CALENDAR_ID_ARGUMENT)
+                _calendarDelegate.retrieveCalendar(calendarId, result)
+            }
             RETRIEVE_EVENTS_METHOD -> {
                 val calendarId = call.argument<String>(CALENDAR_ID_ARGUMENT)
                 val startDate = call.argument<Long>(CALENDAR_EVENTS_START_DATE_ARGUMENT)
@@ -95,7 +100,7 @@ class DeviceCalendarPlugin() : MethodCallHandler {
                 val eventDescription = call.argument<String>(EVENT_DESCRIPTION_ARGUMENT)
                 val eventStart = call.argument<Long>(EVENT_START_DATE_ARGUMENT)
                 val eventEnd = call.argument<Long>(EVENT_END_DATE_ARGUMENT)
-                val eventAlarms = call.argument<MutableList<Int>>(EVENT_ALARMS_ARGUMENT)
+                val eventAlarms = call.argument<MutableList<Int>>(EVENT_ALARMS_ARGUMENT) ?: listOf<Int>()
 
                 val event = Event(eventTitle)
                 event.calendarId = calendarId

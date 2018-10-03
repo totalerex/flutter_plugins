@@ -75,8 +75,9 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
     let eventNotFoundErrorMessageFormat = "The event with the ID %@ could not be found"
     let eventStore = EKEventStore()
     let requestPermissionsMethod = "requestPermissions"
-    let hasPermissionsMethod = "hasPermissions";
+    let hasPermissionsMethod = "hasPermissions"
     let retrieveCalendarsMethod = "retrieveCalendars"
+    let retrieveCalendarMethod = "retrieveCalendar"
     let createOrUpdateCalendarMethod = "createOrUpdateCalendar"
     let deleteCalendarMethod = "deleteCalendar"
     let retrieveEventsMethod = "retrieveEvents"
@@ -119,6 +120,8 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             createOrUpdateCalendar(call, result)
         case deleteCalendarMethod:
             deleteCalendar(call, result)
+        case retrieveCalendarMethod:
+            retrieveCalendar(call, result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -140,6 +143,27 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             }
             
             self.encodeJsonAndFinish(codable: calendars, result: result)
+        }, result: result)
+    }
+    
+    private func retrieveCalendar(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        checkPermissionsThenExecute(permissionsGrantedAction: {
+            let arguments = call.arguments as! Dictionary<String, AnyObject>
+            
+            guard let calendarId = arguments[calendarIdArgument] as? String else {
+                self.finishWithCalendarNotFoundError(result: result, calendarId: "NOID")
+                return
+            }
+            
+            guard let ekCalendar = self.eventStore.calendar(withIdentifier: calendarId) else {
+                self.finishWithCalendarNotFoundError(result: result, calendarId: calendarId)
+                return
+            }
+            
+            let argb = ekCalendar.cgColor.argb ?? 0
+            let calendar = Calendar(id: ekCalendar.calendarIdentifier, name: ekCalendar.title, isReadOnly: !ekCalendar.allowsContentModifications, color: argb)
+            
+            self.encodeJsonAndFinish(codable: calendar, result: result)
         }, result: result)
     }
 
@@ -165,7 +189,7 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             ekCalendar!.cgColor = UIColor(argb: color.intValue).cgColor
 
             let source = eventStore.defaultCalendarForNewEvents.source
-                ekCalendar!.source = source
+            ekCalendar!.source = source
 
             do {
                 try self.eventStore.saveCalendar(ekCalendar!, commit: true)
