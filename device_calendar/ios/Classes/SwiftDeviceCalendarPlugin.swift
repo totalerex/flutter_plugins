@@ -164,15 +164,8 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             ekCalendar!.title = title
             ekCalendar!.cgColor = UIColor(argb: color.intValue).cgColor
 
-            // fetch sources from current sources. calDav is hopefully iCloud and writable.
-            if let source = eventStore.sources.first(where: { ($0.sourceType == .calDAV && $0.title.uppercased() == "ICLOUD") || $0.sourceType == .local}) {
+            let source = eventStore.defaultCalendarForNewEvents.source
                 ekCalendar!.source = source
-            }
-            else {
-                self.eventStore.reset()
-                result(FlutterError(code: self.genericError, message: "Could not fetch a local source type", details: nil))
-                return;
-            }
 
             do {
                 try self.eventStore.saveCalendar(ekCalendar!, commit: true)
