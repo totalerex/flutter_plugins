@@ -66,6 +66,26 @@ class DeviceCalendarPlugin {
     return res;
   }
 
+  /// Retrieves all of the device defined calendars
+  ///
+  /// Returns a [Result] containing a list of device [Calendar]
+  Future<Result<Calendar>> retrieveCalendar(String calendarId) async {
+    final res = new Result<Calendar>();
+
+    try {
+      var calendarJson = await channel.invokeMethod(
+        'retrieveCalendar',
+        <String, Object>{'calendarId': calendarId},
+      );
+
+      res.data = Calendar.fromJson(json.decode(calendarJson));
+    } catch (e) {
+      _parsePlatformExceptionAndUpdateResult<Calendar>(e, res);
+    }
+
+    return res;
+  }
+
   /// Deletes an event from a calendar
   ///
   /// The `calendarId` paramter is the id of the calendar that plugin will try to delete
