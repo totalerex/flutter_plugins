@@ -227,9 +227,9 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
         return
     }
 
-    public fun retrieveCalendar(calendarId: String, pendingChannelResult: MethodChannel.Result, isInternalCall: Boolean = false): Calendar? {
+    public fun retrieveCalendar(calendarId: String?, pendingChannelResult: MethodChannel.Result, isInternalCall: Boolean = false): Calendar? {
         if (isInternalCall || arePermissionsGranted()) {
-            val calendarIdNumber = calendarId.toLongOrNull()
+            val calendarIdNumber = calendarId?.toLongOrNull()
             if (calendarIdNumber == null) {
                 if (!isInternalCall) {
                     finishWithError(INVALID_ARGUMENT, CALENDAR_ID_INVALID_ARGUMENT_NOT_A_NUMBER_MESSAGE, pendingChannelResult)
@@ -318,7 +318,7 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
                 .appendQueryParameter(Calendars.ACCOUNT_TYPE, ACCOUNT_TYPE_LOCAL).build()
     }
 
-    public fun deleteCalendar(calendarId: String, pendingChannelResult: MethodChannel.Result) {
+    public fun deleteCalendar(calendarId: String?, pendingChannelResult: MethodChannel.Result) {
         if (arePermissionsGranted()) {
             var existingCal = retrieveCalendar(calendarId, pendingChannelResult, true)
             if (existingCal == null) {
@@ -333,7 +333,7 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
 
             val contentResolver: ContentResolver? = _context?.getContentResolver()
 
-            val calendarIdNumber = calendarId.toLongOrNull()
+            val calendarIdNumber = calendarId?.toLongOrNull()
             if (calendarIdNumber == null) {
                 finishWithError(INVALID_ARGUMENT, CALENDAR_ID_INVALID_ARGUMENT_NOT_A_NUMBER_MESSAGE, pendingChannelResult)
                 return
@@ -351,7 +351,7 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
     }
 
     @SuppressLint("MissingPermission")
-    public fun retrieveEvents(calendarId: String, startDate: Long?, endDate: Long?, eventIds: List<String>, pendingChannelResult: MethodChannel.Result) {
+    public fun retrieveEvents(calendarId: String?, startDate: Long?, endDate: Long?, eventIds: List<String>, pendingChannelResult: MethodChannel.Result) {
         if (startDate == null && endDate == null && eventIds.isEmpty()) {
             finishWithError(INVALID_ARGUMENT, ErrorMessages.RETRIEVE_EVENTS_ARGUMENTS_NOT_VALID_MESSAGE, pendingChannelResult)
             return
@@ -417,7 +417,7 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
     }
 
     @SuppressLint("MissingPermission")
-    public fun createOrUpdateEvent(calendarId: String, event: Event?, pendingChannelResult: MethodChannel.Result) {
+    public fun createOrUpdateEvent(calendarId: String?, event: Event?, pendingChannelResult: MethodChannel.Result) {
         if (arePermissionsGranted()) {
             if (event == null) {
                 finishWithError(GENERIC_ERROR, CREATE_EVENT_ARGUMENTS_NOT_VALID_MESSAGE, pendingChannelResult)
@@ -429,6 +429,7 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
             values.put(Events.DTSTART, event.start)
             values.put(Events.DTEND, event.end)
             values.put(Events.TITLE, event.title)
+            values.put(Events.EVENT_LOCATION, event.location)
             values.put(Events.DESCRIPTION, event.description)
             values.put(Events.CALENDAR_ID, calendarId)
 
@@ -476,7 +477,7 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
         }
     }
 
-    public fun deleteEvent(calendarId: String, eventId: String, pendingChannelResult: MethodChannel.Result) {
+    public fun deleteEvent(eventId: String?, calendarId: String?, pendingChannelResult: MethodChannel.Result) {
         if (arePermissionsGranted()) {
             var existingCal = retrieveCalendar(calendarId, pendingChannelResult, true)
             if (existingCal == null) {
@@ -489,7 +490,7 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
                 return
             }
 
-            val eventIdNumber = eventId.toLongOrNull()
+            val eventIdNumber = eventId?.toLongOrNull()
             if (eventIdNumber == null) {
                 finishWithError(INVALID_ARGUMENT, CALENDAR_ID_INVALID_ARGUMENT_NOT_A_NUMBER_MESSAGE, pendingChannelResult)
                 return
@@ -554,7 +555,7 @@ public class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener 
         return calendar
     }
 
-    private fun parseEvent(calendarId: String, cursor: Cursor?): Event? {
+    private fun parseEvent(calendarId: String?, cursor: Cursor?): Event? {
         if (cursor == null) {
             return null
         }
