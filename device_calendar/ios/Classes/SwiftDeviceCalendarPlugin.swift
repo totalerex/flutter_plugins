@@ -78,7 +78,6 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
     let hasPermissionsMethod = "hasPermissions"
     let retrieveCalendarsMethod = "retrieveCalendars"
     let retrieveCalendarMethod = "retrieveCalendar"
-    let createOrUpdateCalendarMethod = "createOrUpdateCalendar"
     let deleteCalendarMethod = "deleteCalendar"
     let retrieveEventsMethod = "retrieveEvents"
     let createOrUpdateEventMethod = "createOrUpdateEvent"
@@ -116,8 +115,6 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             createOrUpdateEvent(call, result)
         case deleteEventMethod:
             deleteEvent(call, result)
-        case createOrUpdateCalendarMethod:
-            createOrUpdateCalendar(call, result)
         case deleteCalendarMethod:
             deleteCalendar(call, result)
         case retrieveCalendarMethod:
@@ -167,39 +164,6 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
         }, result: result)
     }
 
-    private func createOrUpdateCalendar(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        checkPermissionsThenExecute(permissionsGrantedAction: {
-            let arguments = call.arguments as! Dictionary<String, AnyObject>
-            let calendarId = arguments[calendarIdArgument] as? String
-            let title = arguments[calendarTitleArgument] as! String
-            let color = arguments[calendarColorArgument] as! NSNumber
-
-            var ekCalendar: EKCalendar?
-            if(calendarId == nil) {
-                ekCalendar = EKCalendar.init(for: .event, eventStore: self.eventStore)
-            } else {
-                ekCalendar = self.eventStore.calendar(withIdentifier: calendarId!)
-                if(ekCalendar == nil) {
-                    self.finishWithCalendarNotFoundError(result: result, calendarId: calendarId!)
-                    return
-                }
-            }
-
-            ekCalendar!.title = title
-            ekCalendar!.cgColor = UIColor(argb: color.intValue).cgColor
-
-            let source = eventStore.defaultCalendarForNewEvents.source
-            ekCalendar!.source = source
-
-            do {
-                try self.eventStore.saveCalendar(ekCalendar!, commit: true)
-                result(ekCalendar!.calendarIdentifier)
-            } catch {
-                self.eventStore.reset()
-                result(FlutterError(code: self.genericError, message: error.localizedDescription, details: nil))
-            }
-        }, result: result)
-    }
     
     private func deleteCalendar(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         checkPermissionsThenExecute(permissionsGrantedAction: {
